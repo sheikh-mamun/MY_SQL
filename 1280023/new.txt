@@ -1,0 +1,73 @@
+My all database syntex
+-------------------------
+
+create database company;
+
+------------------------------------------------
+
+CREATE TABLE Manufacturer (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    address VARCHAR(100),
+    contact_no VARCHAR(50)
+);
+
+-------------------------------------------------------
+
+
+INSERT INTO Manufacturer (name, address, contact_no)
+VALUES
+('led', 'sherapara', '01921755782'),
+--------------------------------------------------
+
+
+
+
+CREATE TABLE Product (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    price INT(5),
+    manufacturer_id INT(10),
+    FOREIGN KEY (manufacturer_id) REFERENCES Manufacturer(id)
+);
+-------------------------------------------------------------------
+INSERT INTO Product (name, price, manufacturer_id)
+VALUES
+('samsung', 6000, 1),
+
+----------------------------------------------------------------
+
+
+CREATE PROCEDURE add_manufacture(
+    IN p_name VARCHAR(50),
+    IN p_address VARCHAR(100),
+    IN p_contact_no VARCHAR(50)
+)
+BEGIN
+    INSERT INTO Manufacturer (name, address, contact_no) VALUES (p_name, p_address, p_contact_no);
+END
+-------------------------------------------------------------------------
+
+CREATE PROCEDURE add_product(
+    IN p_name VARCHAR(50),
+    IN p_price INT,
+    IN p_manufacturer_id INT
+)
+BEGIN
+    INSERT INTO Product (name, price, manufacturer_id) VALUES (p_name, p_price, p_manufacturer_id);
+END 
+----------------------------------------------------------------------
+
+CREATE VIEW ProductView AS
+SELECT p.id, p.name AS product_name, p.price, m.name AS manufacturer_name
+FROM Product p
+INNER JOIN Manufacturer m ON p.manufacturer_id = m.id;
+
+
+------------------------------------------------------------------------
+
+CREATE VIEW highest_price_view AS
+SELECT *
+FROM product
+WHERE price > 5000;
+

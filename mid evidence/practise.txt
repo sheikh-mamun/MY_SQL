@@ -1,0 +1,215 @@
+DROP DATABASE database_name;
+create database company;
+
+
+CREATE TABLE Manufacturer (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    address VARCHAR(100),
+    contact_no VARCHAR(50)
+);
+
+INSERT INTO Manufacturer (name, address, contact_no)
+VALUES
+('Manufacturer A', '123 Main St, Cityville, USA', '123-456-7890'),
+('Manufacturer B', '456 Elm St, Townsville, UK', '987-654-3210'),
+('Manufacturer C', '789 Oak St, Villageville, Germany', '456-789-0123'),
+('Manufacturer D', '101 Pine St, Countryside, Japan', '321-654-9870'),
+('Manufacturer E', '202 Maple St, Riverside, China', '789-012-3456');
+
+CREATE TABLE Product (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    price INT(5),
+    manufacturer_id INT(10),
+    FOREIGN KEY (manufacturer_id) REFERENCES Manufacturer(id)
+);
+
+
+INSERT INTO Product (name, price, manufacturer_id)
+VALUES
+('Product A', 6000, 1),
+('Product B', 7500, 2),
+('Product C', 8500, 3),
+('Product D', 5000, 4),
+('Product E', 9000, 5);
+
+
+DELIMITER //
+
+CREATE PROCEDURE insertManufacturer(
+    IN p_name VARCHAR(50),
+    IN p_address VARCHAR(100),
+    IN p_contact_no VARCHAR(50)
+)
+BEGIN
+    INSERT INTO Manufacturer (name, address, contact_no) VALUES (p_name, p_address, p_contact_no);
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE insertProduct(
+    IN p_name VARCHAR(50),
+    IN p_price INT,
+    IN p_manufacturer_id INT
+)
+BEGIN
+    INSERT INTO Product (name, price, manufacturer_id) VALUES (p_name, p_price, p_manufacturer_id);
+END //
+
+DELIMITER ;
+
+
+CREATE VIEW ProductView AS
+SELECT p.id, p.name AS product_name, p.price, m.name AS manufacturer_name
+FROM Product p
+INNER JOIN Manufacturer m ON p.manufacturer_id = m.id and price > 5000 ;
+
+
+CREATE VIEW expensive_products_view AS
+SELECT *
+FROM product
+WHERE price > 5000;
+
+
+<?php
+// Database connection settings
+$servername = "localhost";
+$username = "your_username";
+$password = "your_password";
+$dbname = "your_database";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// SQL query to retrieve data from the view
+$sql = "SELECT * FROM expensive_products_view";
+
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    // Output data of each row
+    while($row = $result->fetch_assoc()) {
+        echo "ID: " . $row["id"]. " - Name: " . $row["name"]. " - Price: " . $row["price"]. "<br>";
+    }
+} else {
+    echo "0 results";
+}
+
+$conn->close();
+?>
+
+
+
+<?php 
+$db = new mysqli('localhost', 'root', '', 'company');
+
+if(isset($_POST['btnSubmit'])){
+	$mname = $_POST['mname'];
+	$address = $_POST['address']; // Added address field
+	$contact = $_POST['contact'];
+	$db->query("CALL add_manufacturer('$mname', '$address', '$contact')");
+}
+
+if(isset($_POST['addProduct'])){
+	$pname = $_POST['pname'];
+	$price = $_POST['price'];
+	$mid = $_POST['manufac'];
+	$db->query("CALL add_product('$pname', $price, $mid)"); // Removed single quotes around $price and $mid
+}
+
+?>
+
+<h3>Manufacturer table</h3>
+<form action="#" method="post">
+	<table>
+		<tr>
+			<td><label for="mname">Name</label></td>
+			<td><input type="text" name="mname" /></td>
+		</tr>
+		<tr>
+			<td><label for="address">Address</label></td> <!-- Added address field -->
+			<td><input type="text" name="address" /></td> <!-- Added address field -->
+		</tr>
+		<tr>
+			<td><label for="contact">Contact</label></td>
+			<td><input type="text" name="contact" /></td>
+		</tr>
+		<tr> 
+			<td></td>
+			<td><input type="submit" name="btnSubmit" value="submit" /></td>
+		</tr>
+	</table>
+</form>
+
+<h3>Product table</h3>
+<form action="#" method="post">
+	<table>
+		<tr>
+			<td><label for="pname">Name</label></td>
+			<td><input type="text" name="pname" /></td>
+		</tr>
+		<tr>
+			<td><label for="price">Price</label></td>
+			<td><input type="text" name="price" /></td>
+		</tr>
+		<tr>
+			<td><label for="manufac">Manufacturer Name</label></td>
+			<td>
+				<select name="manufac">
+					<?php 
+						$manufac = $db->query("SELECT * FROM Manufacturer");
+						while(list($_mid,$_mname) = $manufac->fetch_row()){
+							echo "<option value='$_mid'>$_mname</option>";
+						}
+					?>
+				</select>
+			</td>
+		</tr>
+		<tr> 
+			<td></td>
+			<td><input type="submit" name="addProduct" value="submit" /></td>
+		</tr>
+	</table>
+</form>
+
+<h3>View Product</h3>
+
+<table border="1" style="border-collapse: collapse;" > 
+	<tr>
+		<th>ID</th>
+		<th>Name</th>
+		<th>Price</th>
+		<th>Manufacturer</th>
+		<th>Contact</th>
+	</tr>
+	<?php 
+		$product = $db->query("SELECT * FROM view_product");
+		while(list($_id,$_name,$_price,$_mname,$_mcont) = $product->fetch_row()){
+			echo "<tr> 
+					<td>$_id</td>
+					<td>$_name</td>
+					<td>$_price</td>
+					<td>$_mname</td>
+					<td>$_mcont</td>
+				</tr>";
+		}
+	
+	?>
+</table>
+
+
+
+
+
+
+
+
